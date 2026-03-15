@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
+from app.api.v1.router import api_router
 
 settings = get_settings()
 
@@ -11,6 +12,7 @@ app = FastAPI(
       debug=settings.debug,
 )
 
+
 #For connecting to frontend
 app.add_middleware(
       CORSMiddleware,
@@ -19,6 +21,8 @@ app.add_middleware(
       allow_headers = ["*"],
       allow_methods = ["*"],
 )
+
+app.include_router(router=api_router, prefix="/api/v1")
 
 @app.get("/")
 def read_root():

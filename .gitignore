@@ -1,0 +1,7 @@
+#folder used for file storage
+backend/uploads
+backend/venv
+
+# environment variables 
+.env
+.env_example
