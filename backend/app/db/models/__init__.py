@@ -1,2 +1,2 @@
 from .dataset import Datasets
-from .processsing_job import ProcessingJob
+from .processing_job import ProcessingJob

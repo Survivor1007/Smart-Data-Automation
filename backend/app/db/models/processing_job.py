@@ -1,8 +1,9 @@
 from enum import Enum as PyEnum
 from sqlalchemy import String, Integer, Text, func, ForeignKey, DateTime, JSON
 from sqlalchemy.orm import mapped_column, Mapped, relationship
-
+from sqlalchemy import Enum as SQLEnum
 from app.db.base import Base
+
 
 class JobStatus(str, PyEnum):
       PENDING="pending"
@@ -22,7 +23,7 @@ class ProcessingJob(Base):
             index=True
       )
       status: Mapped[JobStatus] = mapped_column(
-            String(20), default=JobStatus.PENDING, nullable=False, index=True
+            SQLEnum(JobStatus), default=JobStatus.PENDING, nullable=False, index=True
       )
       operation_type: Mapped[str] = mapped_column(String(100), nullable=False)
       parameters: Mapped[dict | None] = mapped_column(JSON, nullable=True)
@@ -35,4 +36,4 @@ class ProcessingJob(Base):
       )
 
 
-      # dataset: Mapped["Dataset"] = relationship(back_populates="jobs")
+      dataset: Mapped["Datasets"] = relationship("Datasets", back_populates="jobs")

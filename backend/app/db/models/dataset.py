@@ -1,7 +1,9 @@
-from sqlalchemy import String, Text, DateTime, func
+from sqlalchemy import String, Text, DateTime, func, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 from datetime import datetime, timezone
+
+
 
 class Datasets(Base):
       __tablename__ = "datasets"
@@ -17,6 +19,8 @@ class Datasets(Base):
             DateTime(timezone=True), server_default=func.now(), nullable = False
       )
       description:Mapped[str] = mapped_column(Text, nullable=True)
+      analysis_report:Mapped[dict| None] = mapped_column(JSON, nullable=True)
+      analyzed_at:Mapped[DateTime|None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
-      # jobs: Mapped[list["ProcessingJob"]] = relationship(back_populates="dataset")
+      jobs: Mapped[list["ProcessingJob"]] = relationship(back_populates="dataset",cascade="all, delete-orphan")
