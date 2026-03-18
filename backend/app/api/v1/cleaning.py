@@ -33,7 +33,7 @@ def queue_cleaning(
       job = ProcessingJob(
             dataset_id = dataset_id,
             status=JobStatus.PENDING,
-            operation_type="clean,",
+            operation_type="clean",
             parameters={"operations":[op.model_dump() for op in operations]},
             created_at=datetime.now(timezone.utc)
       )

@@ -56,6 +56,32 @@ def run_cleaning_job(job_id:int, file_path:str):
                               new_name = op.get("new_name")
                               if old_name in df.columns and new_name:
                                     df = df.rename(columns = {old_name:new_name})
+                              
+                        elif op_type == "trim_strings":
+                              cols = op.get("columns") or df.select_dtypes(include="object").columns.to_list()
+                              for col in cols:
+                                    if col in df.columns and pd.api.types.is_object_dtype(df[col]):
+                                          df[col] = df[col].str.strip()
+                        
+                        elif op_type == "convert_case":
+                              case_type = op.get("case", "title").lower()
+                              cols = op.get("columns") or df.select_dtypes(include="object").columns.to_list()
+                              for col in cols:
+                                    if case_type == "lower":
+                                          df[col] = df[col].str.lower()
+                                    elif case_type == "upper":
+                                          df[col] = df[col].str.upper()
+                                    elif case_type == "title":
+                                          df[col] = df[col].str.title()
+                        
+                        elif op_type == "replace_value":
+                              cols = op.get("columns", df.columns.to_list())
+                              old_val = op.get("old_value")
+                              new_val = op.get("new_value")
+                              if old_val is not None and new_val is not None:
+                                    for col in cols:
+                                          if col in df.columns:
+                                                df[col] = df[col].replace(old_val, new_val)
                   
                   #Versioning based on previous cleaning jobs
                   prev_clean_jobs = db.query(ProcessingJob).filter(
@@ -72,6 +98,7 @@ def run_cleaning_job(job_id:int, file_path:str):
 
                   base_name, ext = os.path.splitext(os.path.basename(file_path))
                   output_filename = f"{base_name}_cleaned_v{version}{ext}"
+                  print(f"File saved as {output_filename}")
                   output_dir = "uploads/processed"
                   os.makedirs(output_dir, exist_ok=True)
                   output_path = os.path.join(output_dir, output_filename)
