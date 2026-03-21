@@ -1,9 +1,15 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
+
 from enum import Enum as PyEnum
 from sqlalchemy import String, Integer, Text, func, ForeignKey, DateTime, JSON
 from sqlalchemy.orm import mapped_column, Mapped, relationship
 from sqlalchemy import Enum as SQLEnum
 from app.db.base import Base
 
+if TYPE_CHECKING:
+      from app.db.models.dataset import Datasets
 
 class JobStatus(str, PyEnum):
       PENDING="pending"

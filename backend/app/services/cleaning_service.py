@@ -21,6 +21,10 @@ def run_cleaning_job(job_id:int, file_path:str):
                   else:
                         df = pd.read_excel(file_path, engine="openpyxl")
                   
+                  print("Columns in DataFrame:", df.columns.tolist())
+                  print("unit_price dtype:", df["History"].dtype if "unit_price" in df.columns else "not found")
+                  print("unit_price unique values (first 10):", df["History"].unique()[:10].tolist())
+                                    
                   operations = job.parameters.get("operations",[])
                   for op in operations:
                         # if op.get("type") == "remove_duplicates":
@@ -78,10 +82,32 @@ def run_cleaning_job(job_id:int, file_path:str):
                               cols = op.get("columns", df.columns.to_list())
                               old_val = op.get("old_value")
                               new_val = op.get("new_value")
-                              if old_val is not None and new_val is not None:
-                                    for col in cols:
-                                          if col in df.columns:
-                                                df[col] = df[col].replace(old_val, new_val)
+
+                              if old_val is None or new_val is None:
+                                    print(f"Skipping replace_value: old_val or new_val is None")
+                                    continue
+
+                              print(f"Replacing '{old_val}' ({type(old_val)}) → '{new_val}' ({type(new_val)}) in columns: {cols}")
+
+
+                              
+                              for col in cols:
+                                    if col not in df.columns:
+                                          print(f"Column '{col}' not found — skipping")
+                                          continue
+
+                                    try:
+                                          converted_old = df[col].dtype.type(old_val)
+                                    except (ValueError, TypeError):
+                                          converted_old = old_val  # keep as-is if conversion fails
+
+                                    before_count = (df[col] == converted_old).sum()
+                                    print(f"Before replace in '{col}': {before_count} matches")
+
+                                    df[col] = df[col].replace(converted_old, new_val)
+
+                                    after_count = (df[col] == new_val).sum()
+                                    print(f"After replace in '{col}': {after_count} matches")
                   
                   #Versioning based on previous cleaning jobs
                   prev_clean_jobs = db.query(ProcessingJob).filter(

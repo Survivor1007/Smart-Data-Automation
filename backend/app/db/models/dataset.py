@@ -1,8 +1,13 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from sqlalchemy import String, Text, DateTime, func, JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.db.base import Base
 from datetime import datetime, timezone
 
+if TYPE_CHECKING:
+      from app.db.models.processing_job import ProcessingJob
 
 
 class Datasets(Base):

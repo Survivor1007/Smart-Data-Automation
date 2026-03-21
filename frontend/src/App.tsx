@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Upload from './pages/Upload';
 import Datasets from './pages/Datasets';
+import DatasetDetail from './pages/DatasetDetail';
+
 // We'll add DatasetDetail next
 
 function App() {
@@ -27,6 +29,7 @@ function App() {
           <Route path="/" element={<Datasets />} />
           <Route path="/datasets" element={<Datasets />} />
           <Route path="/upload" element={<Upload />} />
+          <Route path="/datasets/:id" element={<DatasetDetail/>}></Route>
           {/* Next: <Route path="/datasets/:id" element={<DatasetDetail />} /> */}
         </Routes>
       </div>
