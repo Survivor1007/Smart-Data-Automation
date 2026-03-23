@@ -4,6 +4,12 @@ import api from "../services/api";
 import { type JobStatus, getStatusColor, getStatusLabel } from '../types/job';
 import Modal from "../components/common/Modal";
 import CleaningModal from "../components/cleaning/CleaningModal";
+import Toast from "../components/common/Toast";
+import { Bar, BarChart, CartesianGrid, Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+
+
+
+const COLORS = ["#0088FE","#00C4F9", "#FFBB28","#8884d8", "#82ca9d", "#ffc658"]
 
 interface   DatasetDetail{
       id:number;
@@ -43,8 +49,57 @@ export default function DatasetDetail(){
       const [showCleanModal, setShowCleanModal]  = useState<boolean>(false);
       const [selectedOps, setSelectedOps] = useState<string[]>([]);
       const [showCleaningModal, setShowCleaningModal] =useState(false);
-      const [previewColumns,setPreviewColumns] = useState<string[]>([])
-      
+      const [previewColumns,setPreviewColumns] = useState<string[]>([]);
+      const [toast,setToast] = useState<{message:string;type?:'success'|'error'|'info';} | null>(null);
+      const [shouldPoll, setShouldPoll] = useState<boolean>(false);
+
+      useEffect(() => {
+        let interval: number | null = null;
+
+        if(shouldPoll){
+          interval = setInterval(() =>{
+            api.get('/jobs?limit=50').then(res => {
+              const related = res.data.filter((j:any) => j.dataset_id === datasetId);
+              setJobs(related);
+
+              const stillActive = related.some(
+                (j:any) => j.status === 'pending' || j.status === 'running'
+              );
+
+              if(!stillActive){
+                setShouldPoll(false);
+                setToast({
+                  message:'All jobs are completed',
+                  type:'success',
+                });
+              }
+            }).catch(err => {
+              console.log(`Polling error:${err}`);
+            });
+          },8000);
+        }
+
+        return () => {
+          if(interval) clearInterval(interval);
+        };
+      }, [shouldPoll, datasetId]);
+
+      //Start auto polling if any job is active on load
+      useEffect(() => {
+        if(jobs.length > 0){
+          const active = jobs.some(j => j.status === 'pending' || j.status === 'running');
+          setShouldPoll(active);
+        }
+      }, [jobs]);
+
+      //update handleQuickClean  and onJobStarted in modal
+      const showToast = (message:string, type:'success' | 'error'| 'info' = "info") => {
+        setToast({message, type});
+      }
+
+      useEffect(() => {
+        return () => setToast(null);
+      },[]);
 
       const handleCleanSubmit = async () => {
             if(selectedOps.length === 0){
@@ -56,7 +111,7 @@ export default function DatasetDetail(){
 
             try{
                   const res = await api.post(`/clean/${datasetId}`,opsPayload);
-                  alert(`Cleaning started!Job ID:${res.data.job_id}`);
+                  
                   setShowCleanModal(false);
 
                   setTimeout(() => window.location.reload(), 3000);
@@ -121,10 +176,10 @@ export default function DatasetDetail(){
                         {type:'remove_duplicates'},
                         {type:'fill_misssing', strategy:'constant', value:0, columns:null},
                   ]);
-                  alert(`Cleaning job started.Job ID:${res.data.job_id}\nCheck job page for status`)
-                  setTimeout(() => window.location.reload(), 3000);
+                  showToast(`Cleaning job started.Job ID:${res.data.job_id}`, "success");
+                  setShouldPoll(true);//start polling
             }catch(err: any){
-                  alert(`Failed to start cleaning:` + (err.response?.data?.detail || 'Unknown  error'));
+                  showToast(`Failed to start cleaning:` + (err.response?.data?.detail || 'Unknown  error'), 'error');
             }
       };
 
@@ -240,63 +295,118 @@ export default function DatasetDetail(){
             </div>
           </div>
         )}
-
-        {/* Analysis Summary */}
+      {/* Analysis Summary */}
         {analysis && (
-          <div className="bg-white shadow rounded-lg p-6">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">Analysis Report</h2>
+  <div className="mt-10 bg-white shadow rounded-lg p-6">
+    <h2 className="text-xl font-semibold text-gray-900 mb-6">Analysis Insights</h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Shape & Duplicates */}
-              <div className="border rounded-lg p-4">
-                <h3 className="font-medium mb-2">Overview</h3>
-                <p>Rows: <strong>{analysis.shape.rows.toLocaleString()}</strong></p>
-                <p>Columns: <strong>{analysis.shape.columns}</strong></p>
-                <p className="mt-2">
-                  Duplicates: <strong>{analysis.duplicates.count.toLocaleString()}</strong> 
-                  ({analysis.duplicates.percentage}%)
-                </p>
-              </div>
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      {/* Missing Values Bar Chart */}
+      <div className="border border-gray-200 rounded-lg p-5 bg-gray-50">
+        <h3 className="text-lg font-medium text-gray-800 mb-4 text-center">
+          Missing Values (%)
+        </h3>
+        {Object.keys(analysis.missing.percentage).length > 0 ? (
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={Object.entries(analysis.missing.percentage)
+                  .map(([col, pct]) => ({ column: col, missing_pct: pct }))
+                  .sort((a, b) => b.missing_pct - a.missing_pct)
+                  .slice(0, 10)}
+                margin={{ top: 10, right: 30, left: 20, bottom: 80 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis
+                  dataKey="column"
+                  angle={-45}
+                  textAnchor="end"
+                  height={70}
+                  interval={0}
+                  fontSize={12}
+                />
+                <YAxis label={{ value: 'Missing %', angle: -90, position: 'insideLeft' }} />
+                <Tooltip formatter={(value) => [`${value}%`, 'Missing']} />
+                <Bar dataKey="missing_pct" fill="#ef4444" name="Missing %" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        ) : (
+          <p className="text-center text-gray-600 py-12">No missing values detected</p>
+        )}
+      </div>
 
-              {/* Missing Values */}
-              <div className="border rounded-lg p-4">
-                <h3 className="font-medium mb-2">Missing Values</h3>
-                {Object.keys(analysis.missing.counts).length > 0 ? (
-                  <ul className="space-y-1 text-sm">
-                    {Object.entries(analysis.missing.counts).map(([col, count]) => (
-                      <li key={col}>
-                        {col}: {count} ({analysis.missing.percentage[col]}%)
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-green-600">No missing values</p>
-                )}
+      {/* Categorical Top Values Pie Charts */}
+      {analysis.categorial_top_values &&
+        Object.entries(analysis.categorial_top_values).map(([col, info]: [string, any]) => {
+          const pieData = Object.entries(info.top_values || {}).map(([val, count], index) => ({
+            name: val || '(empty)',
+            value: count as number,
+            fill: COLORS[index % COLORS.length],
+          }));
+
+          if (pieData.length === 0) return null;
+
+          return (
+            <div key={col} className="border border-gray-200 rounded-lg p-5 bg-gray-50">
+              <h3 className="text-lg font-medium text-gray-800 mb-4 text-center">
+                Top Values — {col} ({info.unique_count} unique)
+              </h3>
+              <div className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      dataKey="value"
+                      nameKey="name"
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      innerRadius={40}
+                      label={({ name, percent = 0 }) => `${name} (${(percent * 100).toFixed(0)}%)`}
+                      labelLine={false}
+                    >
+                      {/* No <Cell> needed — fill is in data */}
+                    </Pie>
+                    <Tooltip formatter={(value, name) => [`${value} occurrences`, name]} />
+                    <Legend verticalAlign="bottom" height={36} />
+                  </PieChart>
+                </ResponsiveContainer>
               </div>
             </div>
+          );
+        })}
+    </div>
 
-            {/* Numeric Stats (simplified) */}
-            {analysis.numeric_stats && Object.keys(analysis.numeric_stats).length > 0 && (
-              <div className="mt-6 border-t pt-4">
-                <h3 className="font-medium mb-2">Numeric Columns Stats</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {Object.entries(analysis.numeric_stats).map(([col, stats]) => (
-                    <div key={col} className="bg-gray-50 p-3 rounded">
-                      <p className="font-medium">{col}</p>
-                      <p className="text-sm">Mean: {stats.mean?.toFixed(2) ?? '—'}</p>
-                      <p className="text-sm">Min/Max: {stats.min ?? '—'} / {stats.max ?? '—'}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
+    {/* Fallback message if no categorical data */}
+    {(!analysis.categorial_top_values ||
+      Object.keys(analysis.categorial_top_values).length === 0) && (
+      <p className="text-center text-gray-500 mt-8 py-6">
+        No categorical columns with top values detected
+      </p>
+    )}
+  </div>
+)}
         {/* Job History */}
                   
       <div className="mt-10 bg-white shadow rounded-lg overflow-hidden">
       <div className="px-6 py-4 border-b border-gray-200">
       <h2 className="text-lg font-medium text-gray-900">Processing History</h2>
+      <div className="text-sm text-gray-500 flex items-center gap-3">
+    {shouldPoll && <span className="text-blue-600">Auto-refreshing...</span>}
+    <button
+      onClick={() => {
+        // Manual refresh
+        api.get('/jobs?limit=50').then(res => {
+          const related = res.data.filter((j: any) => j.dataset_id === dataset.id);
+          setJobs(related);
+        });
+      }}
+      className="text-blue-600 hover:text-blue-800 underline"
+    >
+      Refresh Now
+    </button>
+  </div>
       </div>
 
       {jobsLoading ? (
@@ -427,15 +537,18 @@ export default function DatasetDetail(){
                 datasetId={datasetId}
                 availableColumns ={previewColumns}
                 onJobStarted={(jobId) => {
-                  console.log(`New Job started:${jobId}`)
+                  showToast(`Cleaning Job started! Job ID:${jobId}`, 'success');
+                  setShouldPoll(true);
                   // Optional: refresh jobs list after starting
-                  setTimeout(() => {
-                    // Re-fetch jobs here if needed
-                    window.location.reload()
-                  }, 3000);
+                  
                 }}
               />
+
+            
       </div>
+      {toast && (
+              <Toast message={toast.message} type = {toast.type} onClose={() => setToast(null)}/>
+            )}
     </div>
   );
 }

@@ -79,7 +79,7 @@ export default function CleaningModal({
             try{
                   const response = await api.post(`/clean/${datasetId}`, payload);
                   const jobId = response.data.job_id;
-                  alert(`Cleaning job started.Job ID:${jobId}`);
+                  // alert(`Cleaning job started.Job ID:${jobId}`);
                   onJobStarted?.(jobId);
                   onClose();
                   

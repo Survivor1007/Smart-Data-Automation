@@ -21,9 +21,9 @@ def run_cleaning_job(job_id:int, file_path:str):
                   else:
                         df = pd.read_excel(file_path, engine="openpyxl")
                   
-                  print("Columns in DataFrame:", df.columns.tolist())
-                  print("unit_price dtype:", df["History"].dtype if "unit_price" in df.columns else "not found")
-                  print("unit_price unique values (first 10):", df["History"].unique()[:10].tolist())
+                  # print("Columns in DataFrame:", df.columns.tolist())
+                  # print("unit_price dtype:", df["History"].dtype if "unit_price" in df.columns else "not found")
+                  # print("unit_price unique values (first 10):", df["History"].unique()[:10].tolist())
                                     
                   operations = job.parameters.get("operations",[])
                   for op in operations:
@@ -39,6 +39,13 @@ def run_cleaning_job(job_id:int, file_path:str):
                         elif op_type == "fill_missing":
                               strategy = op.get("strategy", "mean")
                               columns = op.get("columns", df.columns.tolist())
+                              cols = op.get("columns")
+                              if cols is None:
+                                    cols = df.columns.tolist()
+                              for col in cols:
+                                    if col not in df.columns:
+                                          continue
+                              
                         
                               for col in columns:
                                     if col not in df.columns:
@@ -53,21 +60,40 @@ def run_cleaning_job(job_id:int, file_path:str):
                                     elif strategy in ["ffill", "bfill"]:
                                           df[col] = df[col].fillna(method = strategy)
                         elif op_type == "drop_columns":
+                              cols = op.get("columns")
+                              if cols is None:
+                                    cols = df.columns.tolist()
+                              for col in cols:
+                                    if col not in df.columns:
+                                          continue
                               columns_to_drop = op.get("columns", [])
                               df = df.drop(columns=[c for c in columns_to_drop if c in df.columns])
                         elif op_type == "rename_column":
+                              
                               old_name = op.get("old_name")
                               new_name = op.get("new_name")
                               if old_name in df.columns and new_name:
                                     df = df.rename(columns = {old_name:new_name})
                               
                         elif op_type == "trim_strings":
+                              cols = op.get("columns")
+                              if cols is None:
+                                    cols = df.columns.tolist()
+                              for col in cols:
+                                    if col not in df.columns:
+                                          continue
                               cols = op.get("columns") or df.select_dtypes(include="object").columns.to_list()
                               for col in cols:
                                     if col in df.columns and pd.api.types.is_object_dtype(df[col]):
                                           df[col] = df[col].str.strip()
                         
                         elif op_type == "convert_case":
+                              cols = op.get("columns")
+                              if cols is None:
+                                    cols = df.columns.tolist()
+                              for col in cols:
+                                    if col not in df.columns:
+                                          continue
                               case_type = op.get("case", "title").lower()
                               cols = op.get("columns") or df.select_dtypes(include="object").columns.to_list()
                               for col in cols:
@@ -79,6 +105,12 @@ def run_cleaning_job(job_id:int, file_path:str):
                                           df[col] = df[col].str.title()
                         
                         elif op_type == "replace_value":
+                              cols = op.get("columns")
+                              if cols is None:
+                                    cols = df.columns.tolist()
+                              for col in cols:
+                                    if col not in df.columns:
+                                          continue
                               cols = op.get("columns", df.columns.to_list())
                               old_val = op.get("old_value")
                               new_val = op.get("new_value")
@@ -124,7 +156,7 @@ def run_cleaning_job(job_id:int, file_path:str):
 
                   base_name, ext = os.path.splitext(os.path.basename(file_path))
                   output_filename = f"{base_name}_cleaned_v{version}{ext}"
-                  print(f"File saved as {output_filename}")
+                  # print(f"File saved as {output_filename}")
                   output_dir = "uploads/processed"
                   os.makedirs(output_dir, exist_ok=True)
                   output_path = os.path.join(output_dir, output_filename)
