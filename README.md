@@ -146,13 +146,13 @@ npm run dev
 ### 3. Dataset Detail – Preview & Analysis
 <img src="screenshots/03-dataset-detail.png" alt="Dataset Detail">
 
-3. Analysis Charts (Missing % + Top Values)
+### 3. Analysis Charts (Missing % + Top Values)
 <img src="screenshots/04-analysis-insights.png" alt="Analysis Charts">
 
-4. Advanced Cleaning Modal
+### 4. Advanced Cleaning Modal
 <img src="screenshots/05-cleaning-operations.png" alt="Cleaning Modal">
 
-5. Job History with Live Updates
+### 5. Job History with Live Updates
 <img src="screenshots/06-processing-history.png" alt="Job History">
 
 ---
