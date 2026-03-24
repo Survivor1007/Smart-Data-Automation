@@ -135,6 +135,28 @@ npm run dev
 
 ---
 
+## 📸 Screenshots
+
+### 1. Upload Page
+<img src="screenshots/01-upload-page.png" alt="Upload Page">
+
+### 2.Dataset List
+<img src="screenshots/02-dataset-page.png" alt="Dataset Page">
+
+### 3. Dataset Detail – Preview & Analysis
+<img src="screenshots/03-dataset-detail.png" alt="Dataset Detail">
+
+3. Analysis Charts (Missing % + Top Values)
+<img src="screenshots/04-analysis-insights.png" alt="Analysis Charts">
+
+4. Advanced Cleaning Modal
+<img src="screenshots/05-cleaning-operations.png" alt="Cleaning Modal">
+
+5. Job History with Live Updates
+<img src="screenshots/06-processing-history.png" alt="Job History">
+
+---
+
 ## 🎯 What This Project Demonstrates
 
 - Full-stack development using modern technologies
