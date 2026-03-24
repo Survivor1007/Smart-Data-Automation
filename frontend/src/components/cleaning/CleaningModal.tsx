@@ -22,6 +22,11 @@ export default function CleaningModal({
   const [opConfigs, setOpConfigs] = useState<Record<string, any>>({});
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  const [toast, setToast] = useState<{ message: string; type?: "success" | "error" | "info" } | null>(null);
+
+  const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
+    setToast({ message, type });
+  };
 
   const availableOperations = [
     { id: "remove_duplicates", label: "Remove Duplicates", configurable: false },
@@ -383,6 +388,9 @@ export default function CleaningModal({
   );
 }
 
-function showToast(arg0: string, arg1: string) {
-  throw new Error("Function not implemented.");
-}
+// function showToast(arg0: string, arg1: string) {
+//   throw new Error("Function not implemented.");
+// }
+// const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
+//     setToast({ message, type });
+//   };

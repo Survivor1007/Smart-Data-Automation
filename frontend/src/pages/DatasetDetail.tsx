@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import api from "../services/api";
 import { type JobStatus, getStatusColor, getStatusLabel } from "../types/job";
-import Modal from "../components/common/Modal";
+// import Modal from "../components/common/Modal";
 import CleaningModal from "../components/cleaning/CleaningModal";
 import Toast from "../components/common/Toast";
 import {
@@ -31,7 +31,7 @@ const COLORS = [
 interface DatasetDetail {
   id: number;
   filename: string;
-  file_size_bytes: number | null;
+  file_size_byte: number | null;
   uploaded_at: string;
   row_count: number | null;
   col_count: number | null;
@@ -237,12 +237,12 @@ export default function DatasetDetail() {
         </div>
 
         {/* Basic Info */}
-        <div className="bg-white shadow rounded-lg p-6 mb-8">
+        <div className="bg-white  shadow rounded-lg p-6 mb-8">
           <dl className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div>
               <dt className="text-sm font-medium text-gray-500">Size</dt>
               <dd className="mt-1 text-xl font-semibold text-gray-900">
-                {dataset.file_size_bytes != null ? `${(dataset.file_size_bytes / 1024).toFixed(1)} KB` : "—"}
+                {dataset.file_size_byte != null ? `${(dataset.file_size_byte / 1024).toFixed(1)} KB` : "—"}
               </dd>
             </div>
             <div>
@@ -262,7 +262,7 @@ export default function DatasetDetail() {
 
         {/* Preview Table */}
         {preview ? (
-          <div className="bg-white shadow rounded-lg overflow-hidden mb-8">
+          <div className="bg-white   shadow rounded-lg overflow-hidden mb-8">
             <div className="px-6 py-4 border-b border-gray-200">
               <h2 className="text-lg font-medium text-gray-900">
                 Data Preview (first {preview.sample_rows.length} rows)
@@ -307,7 +307,7 @@ export default function DatasetDetail() {
 
         {/* Analysis with Charts */}
         {analysis ? (
-          <div className="mt-10 bg-white shadow rounded-lg p-6">
+          <div className="mt-10 bg-white  shadow rounded-lg p-6">
             <h2 className="text-xl font-semibold text-gray-900 mb-6">Analysis Insights</h2>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -402,7 +402,7 @@ export default function DatasetDetail() {
         )}
 
         {/* Job History */}
-        <div className="mt-10 bg-white shadow rounded-lg overflow-hidden">
+        <div className="mt-10 bg-white  shadow rounded-lg overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
             <h2 className="text-lg font-medium text-gray-900">Processing History</h2>
             <div className="text-sm text-gray-500 flex items-center gap-3">
