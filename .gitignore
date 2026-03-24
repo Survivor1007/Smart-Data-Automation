@@ -1,7 +1,62 @@
-#folder used for file storage
-backend/uploads
-backend/venv
-backend/app/sevices/.cph
-# environment variables 
+# =====================================
+# Python & Backend
+# =====================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+ENV/
+env/
 .env
-.env_example
+.env.example
+backend/venv/
+backend/__pycache__/
+backend/*.pyc
+backend/*.pyo
+backend/*.pyd
+
+# =====================================
+# Frontend & Node.js
+# =====================================
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.env
+frontend/.env.local
+frontend/.env.*.local
+
+# =====================================
+# Data & Uploads
+# =====================================
+uploads/
+backend/uploads/
+
+# =====================================
+# Docker
+# =====================================
+.docker/
+docker-compose.override.yml
+
+# =====================================
+# IDE & OS
+# =====================================
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# =====================================
+# Logs & Temporary
+# =====================================
+*.log
+logs/
+tmp/
+
+# =====================================
+# Alembic (optional - keep versions if you want to show migrations)
+# =====================================
+# backend/alembic/versions/

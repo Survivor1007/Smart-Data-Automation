@@ -174,7 +174,39 @@ npm run dev
 - Professional project structure and documentation
 
 --- 
+## 🐳 Docker Setup
 
+The project is fully containerized using Docker and Docker Compose for easy local development and consistent environments.
+
+### Quick Start with Docker
+
+```bash
+# From the project root
+docker compose up --build
+# Start all services in foreground
+docker compose up --build
+
+# Start in background (detached mode)
+docker compose up -d --build
+
+# Stop all services
+docker compose down
+
+# View logs
+docker compose logs -f backend
+docker compose logs -f frontend
+```
+
+### This will start:
+
+- Frontend → http://localhost:5173
+- Backend API → http://localhost:8000
+- PostgreSQL → localhost:5433
+
+
+
+
+---
 ## 🔮 Future Enhancements
 
 ### Planned improvements include:
